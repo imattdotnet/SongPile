@@ -117,7 +117,7 @@
     }
     .search-input {
       flex: 1;
-      min-width: 200px;
+      min-width: 180px;
       background: var(--surface);
       border: 1px solid var(--surface-border);
       color: var(--text);
@@ -174,6 +174,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 10px;
+      flex-wrap: wrap;
     }
     .song-title {
       font-size: 1.2rem;
@@ -187,6 +188,38 @@
       font-weight: 600;
       margin-top: 3px;
     }
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-original { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+    .badge-cover { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+    .badge-ready { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+    .badge-draft { background: rgba(227, 130, 43, 0.15); color: var(--accent); }
+    .badge-date {
+      background: #111317;
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .meta-pills {
       display: flex;
       flex-wrap: wrap;
@@ -201,19 +234,6 @@
       border-radius: 4px;
       border: 1px solid var(--surface-border);
     }
-    .badges { display: flex; gap: 6px; align-items: center; }
-    .badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-original { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
-    .badge-cover { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
-    .badge-ready { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-    .badge-draft { background: rgba(227, 130, 43, 0.15); color: var(--accent); }
 
     /* Modal / Form */
     .modal-overlay {
@@ -257,7 +277,9 @@
       border-top: 1px solid var(--surface-border);
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .form-grid-4 {
@@ -416,12 +438,20 @@
     <!-- TAB 1: REPERTOIRE LIST -->
     <section id="tab-songs">
       <div class="controls">
-        <input type="text" id="searchInput" class="search-input" placeholder="Search title, lyrics, chords, tags, co-writers..." oninput="renderSongList()">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search title, lyrics, chords, tags, dates..." oninput="renderSongList()">
+        
+        <select id="sortSelect" class="filter-select" onchange="renderSongList()">
+          <option value="recent">Sort: Recently Saved</option>
+          <option value="title">Sort: Title (A-Z)</option>
+          <option value="status">Sort: Status</option>
+        </select>
+
         <select id="typeFilter" class="filter-select" onchange="renderSongList()">
           <option value="all">All Types</option>
           <option value="Original">Originals</option>
           <option value="Cover">Covers</option>
         </select>
+
         <select id="statusFilter" class="filter-select" onchange="renderSongList()">
           <option value="all">All Statuses</option>
           <option value="Live Ready">Live Ready</option>
@@ -430,6 +460,7 @@
           <option value="Spark">Spark / Idea</option>
           <option value="Retired">Retired</option>
         </select>
+
         <button class="btn" onclick="openNewSongModal()">+ New Song</button>
       </div>
 
@@ -608,9 +639,10 @@
 
       </div>
       <div class="modal-footer">
-        <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
           <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Chart</button>
           <button id="deleteSongBtn" class="btn btn-danger" onclick="deleteCurrentSong()">Delete</button>
+          <span id="modalDateStamp" style="font-size: 0.75rem; color: var(--text-muted);"></span>
         </div>
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -634,6 +666,8 @@
         coWriters: "",
         tags: ["Indie Rock", "Driving", "Acoustic"],
         chords: "Em, D",
+        updatedAt: "2026-11-14T09:40:00Z",
+        updatedAtFormatted: "Nov 14, 2026, 9:40 AM",
         lyrics: "Intro: [Em] [D] [Em] [D]\n\n[Em]Burn this bridge before you [D]walk away\n[Em]Nothing left of yesterday [D]\n\nChorus:\n[C]Fire in the dark, [G]smoke in the trees\n[Am]Whisper down to your [B7]knees",
         audios: []
       },
@@ -649,6 +683,8 @@
         coWriters: "",
         tags: ["Folk", "Ballad", "Fingerpicking"],
         chords: "F, Am, G Verse Dm, C, Bb, Am",
+        updatedAt: "2026-11-14T09:20:00Z",
+        updatedAtFormatted: "Nov 14, 2026, 9:20 AM",
         lyrics: "Intro: [F] [Am] [G]\n\nVerse:\n[Dm]Caught in the middle of a [C]broken dream\n[Bb]Tearing apart at the [Am]frayed old seam\n\nChorus:\n[F]It don't go down that [Am]way no more [G]",
         audios: []
       },
@@ -664,6 +700,8 @@
         coWriters: "",
         tags: ["Upbeat", "Story", "Acoustic"],
         chords: "intro C G F C: Bb G",
+        updatedAt: "2026-11-14T09:10:00Z",
+        updatedAtFormatted: "Nov 14, 2026, 9:10 AM",
         lyrics: "Intro: [C] [G] [F] [C] : [Bb] [G]\n\nVerse:\nStreet sweeper coming at the break of dawn\nBetter move my car before the daylight's gone",
         audios: []
       }
@@ -848,26 +886,55 @@
       text.innerText = msg;
     }
 
+    // Helper: Format Date
+    function formatDateNice(dateObj) {
+      return dateObj.toLocaleDateString(undefined, { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric'
+      }) + ', ' + dateObj.toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
     // Song Rendering & Filter
     function renderSongList() {
       const list = document.getElementById("songList");
       const query = document.getElementById("searchInput").value.toLowerCase();
       const typeFilter = document.getElementById("typeFilter").value;
       const statusFilter = document.getElementById("statusFilter").value;
+      const sortBy = document.getElementById("sortSelect").value;
 
       list.innerHTML = "";
 
-      const filtered = songs.filter(s => {
+      let filtered = songs.filter(s => {
         const tagsString = (s.tags || []).join(" ").toLowerCase();
+        const dateStr = (s.updatedAtFormatted || '').toLowerCase();
         const matchesQuery = s.title.toLowerCase().includes(query) || 
                              (s.chords && s.chords.toLowerCase().includes(query)) ||
                              (s.lyrics && s.lyrics.toLowerCase().includes(query)) ||
                              (s.coWriters && s.coWriters.toLowerCase().includes(query)) ||
+                             dateStr.includes(query) ||
                              tagsString.includes(query);
 
         const matchesType = typeFilter === "all" || s.type === typeFilter;
         const matchesStatus = statusFilter === "all" || s.status === statusFilter;
         return matchesQuery && matchesType && matchesStatus;
+      });
+
+      // Sorting
+      filtered.sort((a, b) => {
+        if (sortBy === "recent") {
+          const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          return timeB - timeA;
+        } else if (sortBy === "title") {
+          return a.title.localeCompare(b.title);
+        } else if (sortBy === "status") {
+          return a.status.localeCompare(b.status);
+        }
+        return 0;
       });
 
       if (filtered.length === 0) {
@@ -882,6 +949,7 @@
 
         const typeBadge = s.type === "Original" ? "badge-original" : "badge-cover";
         const statusBadge = s.status === "Live Ready" ? "badge-ready" : "badge-draft";
+        const dateDisplay = s.updatedAtFormatted || "Unsaved date";
 
         let pillsHtml = [];
         if (s.key) pillsHtml.push(`<span class="meta-pill">Key: ${s.key}</span>`);
@@ -896,9 +964,12 @@
               <div class="song-title">${s.title}</div>
               <div class="chord-pattern">(${s.chords || 'No chords set'})</div>
             </div>
-            <div class="badges">
-              <span class="badge ${typeBadge}">${s.type}</span>
-              <span class="badge ${statusBadge}">${s.status}</span>
+            <div class="card-right">
+              <div class="badges">
+                <span class="badge ${typeBadge}">${s.type}</span>
+                <span class="badge ${statusBadge}">${s.status}</span>
+              </div>
+              <span class="badge-date" title="Last saved">🕒 Saved: ${dateDisplay}</span>
             </div>
           </div>
           ${pillsHtml.length ? `<div class="meta-pills">${pillsHtml.join("")}</div>` : ''}
@@ -923,6 +994,7 @@
       document.getElementById("editTags").value = "";
       document.getElementById("editChords").value = "";
       document.getElementById("editLyrics").value = "";
+      document.getElementById("modalDateStamp").innerText = "";
       document.getElementById("deleteSongBtn").style.display = "none";
       renderModalAudios([]);
       document.getElementById("songModal").style.display = "flex";
@@ -945,6 +1017,7 @@
       document.getElementById("editTags").value = (s.tags || []).join(", ");
       document.getElementById("editChords").value = s.chords || "";
       document.getElementById("editLyrics").value = s.lyrics || "";
+      document.getElementById("modalDateStamp").innerText = s.updatedAtFormatted ? `Last Saved: ${s.updatedAtFormatted}` : "";
       document.getElementById("deleteSongBtn").style.display = "inline-block";
       renderModalAudios(s.audios || []);
       document.getElementById("songModal").style.display = "flex";
@@ -964,6 +1037,7 @@
         .map(t => t.trim())
         .filter(t => t.length > 0);
 
+      const now = new Date();
       const songData = {
         title: title,
         type: document.getElementById("editType").value,
@@ -975,11 +1049,14 @@
         coWriters: document.getElementById("editCoWriters").value.trim(),
         tags: parsedTags,
         chords: document.getElementById("editChords").value.trim(),
-        lyrics: document.getElementById("editLyrics").value
+        lyrics: document.getElementById("editLyrics").value,
+        updatedAt: now.toISOString(),
+        updatedAtFormatted: formatDateNice(now)
       };
 
       if (!activeSongId) {
         songData.id = "song-" + Date.now();
+        songData.createdAt = now.toISOString();
         songData.audios = [];
         songs.push(songData);
       } else {
@@ -1083,13 +1160,17 @@
       const s = songs.find(x => x.id === activeSongId);
       if (s) {
         if (!s.audios) s.audios = [];
+        const now = new Date();
         s.audios.push({
           label: label,
-          date: new Date().toLocaleDateString(),
+          date: formatDateNice(now),
           url: base64Url
         });
+        s.updatedAt = now.toISOString();
+        s.updatedAtFormatted = formatDateNice(now);
         persist();
         renderModalAudios(s.audios);
+        renderSongList();
       }
     }
 
@@ -1157,6 +1238,4 @@
     // Init
     initSyncUI();
     renderSongList();
-  </script>
-</body>
-</html>
+  
