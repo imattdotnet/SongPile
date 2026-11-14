@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TunePile — Songwriter Repertoire & Scratchpad</title>
+  <title>SongPile — Songwriter Repertoire & Scratchpad</title>
   <style>
     :root {
-      --bg: #121417;
-      --surface: #1b1f24;
-      --surface-border: #2d333b;
-      --surface-hover: #262c36;
+      --bg: #111317;
+      --surface: #1a1e24;
+      --surface-border: #2c333d;
+      --surface-hover: #242a34;
       --text: #e6edf3;
       --text-muted: #8b949e;
       --accent: #e3822b;
@@ -18,6 +18,7 @@
       --red: #f85149;
       --green: #3fb950;
       --blue: #58a6ff;
+      --purple: #bc8cff;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     }
@@ -48,8 +49,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-weight: 700;
-      font-size: 1.15rem;
+      font-weight: 800;
+      font-size: 1.25rem;
       color: var(--accent);
       letter-spacing: -0.5px;
     }
@@ -76,12 +77,12 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: 0 auto;
       padding: 18px;
     }
 
-    /* Sync Status Indicator */
+    /* Sync Bar */
     .sync-bar {
       display: flex;
       justify-content: space-between;
@@ -157,6 +158,7 @@
     .btn-danger { background: rgba(248, 81, 73, 0.2); color: var(--red); border: 1px solid var(--red); }
     .btn-danger:hover { background: var(--red); color: #fff; }
 
+    /* Song Cards */
     .song-list { display: flex; flex-direction: column; gap: 12px; }
     .song-card {
       background: var(--surface);
@@ -174,16 +176,30 @@
       gap: 10px;
     }
     .song-title {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--text);
     }
     .chord-pattern {
       font-family: var(--font-mono);
       color: var(--accent);
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       font-weight: 600;
-      margin-top: 4px;
+      margin-top: 3px;
+    }
+    .meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .meta-pill {
+      background: #111317;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--surface-border);
     }
     .badges { display: flex; gap: 6px; align-items: center; }
     .badge {
@@ -195,14 +211,15 @@
       letter-spacing: 0.5px;
     }
     .badge-original { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
-    .badge-cover { background: rgba(163, 113, 247, 0.15); color: #bc8cff; }
+    .badge-cover { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
     .badge-ready { background: rgba(63, 185, 80, 0.15); color: var(--green); }
     .badge-draft { background: rgba(227, 130, 43, 0.15); color: var(--accent); }
 
+    /* Modal / Form */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.78);
       backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
@@ -215,8 +232,8 @@
       border: 1px solid var(--surface-border);
       border-radius: 10px;
       width: 100%;
-      max-width: 780px;
-      max-height: 90vh;
+      max-width: 820px;
+      max-height: 92vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -243,20 +260,21 @@
       gap: 10px;
     }
 
-    .form-grid {
+    .form-grid-4 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
     }
     .form-group { display: flex; flex-direction: column; gap: 4px; }
     .form-group label {
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.78rem;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .form-control {
-      background: #121417;
+      background: #111317;
       border: 1px solid var(--surface-border);
       color: var(--text);
       padding: 8px 10px;
@@ -269,11 +287,12 @@
       font-size: 0.9rem;
       line-height: 1.6;
       resize: vertical;
-      min-height: 160px;
+      min-height: 180px;
     }
 
+    /* Scratchpad Shelf */
     .audio-shelf {
-      background: #121417;
+      background: #111317;
       border: 1px solid var(--surface-border);
       border-radius: 8px;
       padding: 14px;
@@ -330,24 +349,24 @@
       margin-bottom: 16px;
     }
     .setlist-raw {
-      background: #121417;
+      background: #111317;
       border: 1px solid var(--surface-border);
-      padding: 14px;
+      padding: 16px;
       border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 0.95rem;
+      font-size: 1rem;
       white-space: pre-wrap;
       color: var(--text);
-      line-height: 1.8;
+      line-height: 1.9;
     }
     .stage-floor-mode {
       background: #000;
       color: #fff;
       padding: 24px;
       border-radius: 8px;
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 700;
-      line-height: 2;
+      line-height: 2.2;
       border: 2px solid var(--accent);
     }
 
@@ -357,6 +376,7 @@
       .modal-overlay { position: static !important; background: transparent !important; display: block !important; }
       .modal { border: none !important; max-width: 100% !important; max-height: none !important; }
       .modal-body { padding: 0 !important; }
+      textarea.form-control { border: none !important; font-size: 11pt !important; color: #000 !important; }
     }
   </style>
 </head>
@@ -365,7 +385,7 @@
   <!-- Top Navigation Header -->
   <header>
     <div class="brand">
-      <span>🎸</span> TunePile
+      <span>🎼</span> SongPile
     </div>
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('songs')">Songs</button>
@@ -377,7 +397,7 @@
 
   <div class="container">
 
-    <!-- Global Quick Sync Status Bar -->
+    <!-- Quick GitHub Sync Status Bar -->
     <div class="sync-bar">
       <div class="sync-status">
         <span id="syncDot" class="sync-dot"></span>
@@ -396,7 +416,7 @@
     <!-- TAB 1: REPERTOIRE LIST -->
     <section id="tab-songs">
       <div class="controls">
-        <input type="text" id="searchInput" class="search-input" placeholder="Search title, lyrics, or chords..." oninput="renderSongList()">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search title, lyrics, chords, tags, co-writers..." oninput="renderSongList()">
         <select id="typeFilter" class="filter-select" onchange="renderSongList()">
           <option value="all">All Types</option>
           <option value="Original">Originals</option>
@@ -405,9 +425,10 @@
         <select id="statusFilter" class="filter-select" onchange="renderSongList()">
           <option value="all">All Statuses</option>
           <option value="Live Ready">Live Ready</option>
-          <option value="In Progress">In Progress</option>
           <option value="Rehearsing">Rehearsing</option>
+          <option value="In Progress">In Progress</option>
           <option value="Spark">Spark / Idea</option>
+          <option value="Retired">Retired</option>
         </select>
         <button class="btn" onclick="openNewSongModal()">+ New Song</button>
       </div>
@@ -425,28 +446,28 @@
       <div class="card-panel">
         <h3 style="margin-bottom: 8px;">Compiled Repertoire Setlist</h3>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
-          Automatically formatted with Title and your basic chord patterns:
+          Formatted with Title, Key/Capo, and basic chord patterns for fast stage reference:
         </p>
         <div id="setlistOutput" class="setlist-raw"></div>
       </div>
     </section>
 
-    <!-- TAB 3: GITHUB DIRECT SYNC SETTINGS -->
+    <!-- TAB 3: GITHUB DIRECT SYNC -->
     <section id="tab-sync" style="display: none;">
       <div class="card-panel">
-        <h3 style="margin-bottom: 8px;">Direct GitHub Sync Setup</h3>
+        <h3 style="margin-bottom: 8px;">SongPile GitHub Sync</h3>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
-          Configure your GitHub Personal Access Token to commit your <code>songs.json</code> directly to your repository so your phone and laptop stay in sync.
+          Configure your GitHub Personal Access Token to commit your <code>songs.json</code> directly to your <b>SongPile</b> repository:
         </p>
 
-        <div class="form-grid" style="margin-bottom: 14px;">
+        <div class="form-grid-4" style="margin-bottom: 14px;">
           <div class="form-group">
             <label>Repo Owner</label>
             <input type="text" id="ghOwner" class="form-control" placeholder="imattdotnet">
           </div>
           <div class="form-group">
-            <label>Repository Name</label>
-            <input type="text" id="ghRepo" class="form-control" placeholder="TunePile">
+            <label>Repository</label>
+            <input type="text" id="ghRepo" class="form-control" placeholder="SongPile">
           </div>
           <div class="form-group">
             <label>Branch</label>
@@ -455,7 +476,7 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 16px;">
-          <label>GitHub Personal Access Token (Classic with 'repo' scope)</label>
+          <label>Personal Access Token (Classic with 'repo' scope)</label>
           <input type="password" id="ghToken" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
           <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">
             Tokens are stored securely only in your device's private browser memory.
@@ -474,9 +495,9 @@
     <!-- TAB 4: MANUAL BACKUP -->
     <section id="tab-backup" style="display: none;">
       <div class="card-panel">
-        <h3 style="margin-bottom: 8px;">Manual JSON Backup & Restore</h3>
+        <h3 style="margin-bottom: 8px;">Offline Backup & Restore</h3>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 14px;">
-          You can also manually download or restore your <code>songs.json</code> offline:
+          Export or import your complete song catalog as a JSON file:
         </p>
         <div style="display: flex; gap: 10px;">
           <button class="btn" onclick="exportLibraryJSON()">📥 Download songs.json</button>
@@ -498,9 +519,11 @@
         <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group" style="grid-column: 1 / -1;">
-            <label>Title</label>
+
+        <!-- Title & Status -->
+        <div class="form-grid-4">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Song Title</label>
             <input type="text" id="editTitle" class="form-control" placeholder="e.g. Burn This">
           </div>
           <div class="form-group">
@@ -520,20 +543,50 @@
               <option value="Retired">Retired</option>
             </select>
           </div>
+        </div>
+
+        <!-- Musical Spec: Key, Capo, BPM, Time Sig -->
+        <div class="form-grid-4">
           <div class="form-group">
-            <label>Key / Capo</label>
-            <input type="text" id="editKeyCapo" class="form-control" placeholder="e.g. Em (Capo 2)">
+            <label>Key</label>
+            <input type="text" id="editKey" class="form-control" placeholder="e.g. Em">
+          </div>
+          <div class="form-group">
+            <label>Capo</label>
+            <input type="text" id="editCapo" class="form-control" placeholder="e.g. 2 / None">
+          </div>
+          <div class="form-group">
+            <label>Tempo (BPM)</label>
+            <input type="text" id="editBpm" class="form-control" placeholder="e.g. 118">
+          </div>
+          <div class="form-group">
+            <label>Time Sig</label>
+            <input type="text" id="editTimeSig" class="form-control" placeholder="e.g. 4/4, 3/4">
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Quick Chord Pattern (Appears on Setlists)</label>
-          <input type="text" id="editChords" class="form-control" placeholder="e.g. intro C G F C: Bb G">
+        <!-- Co-Writers & Tags -->
+        <div class="form-grid-4">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Co-Writers</label>
+            <input type="text" id="editCoWriters" class="form-control" placeholder="e.g. Jane Doe, John Smith">
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Tags / Themes (comma separated)</label>
+            <input type="text" id="editTags" class="form-control" placeholder="e.g. Acoustic, Fingerpicking, Story">
+          </div>
         </div>
 
+        <!-- Quick Chords -->
+        <div class="form-group">
+          <label>Quick Chord Pattern (Shows on Setlists)</label>
+          <input type="text" id="editChords" class="form-control" placeholder="e.g. Intro: C G F C | Verse: Dm C Bb Am">
+        </div>
+
+        <!-- Audio Scratchpad -->
         <div class="audio-shelf">
           <div class="audio-header">
-            <label style="font-weight: 700; color: var(--accent); font-size: 0.85rem; text-transform: uppercase;">
+            <label style="font-weight: 700; color: var(--accent); font-size: 0.82rem; text-transform: uppercase;">
               🎙️ Scratchpad & Voice Memos
             </label>
             <div style="display: flex; gap: 8px;">
@@ -547,10 +600,12 @@
           <div id="audioListContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
+        <!-- Lyrics & Chords -->
         <div class="form-group">
           <label>Lyrics & Chord Chart</label>
-          <textarea id="editLyrics" class="form-control" rows="8" placeholder="Paste lyrics and chord sheets here..."></textarea>
+          <textarea id="editLyrics" class="form-control" placeholder="Paste lyrics and chord sheets here..."></textarea>
         </div>
+
       </div>
       <div class="modal-footer">
         <div>
@@ -572,7 +627,12 @@
         title: "Burn This",
         type: "Original",
         status: "Live Ready",
-        keyCapo: "Em",
+        key: "Em",
+        capo: "None",
+        bpm: "118",
+        timeSig: "4/4",
+        coWriters: "",
+        tags: ["Indie Rock", "Driving", "Acoustic"],
         chords: "Em, D",
         lyrics: "Intro: [Em] [D] [Em] [D]\n\n[Em]Burn this bridge before you [D]walk away\n[Em]Nothing left of yesterday [D]\n\nChorus:\n[C]Fire in the dark, [G]smoke in the trees\n[Am]Whisper down to your [B7]knees",
         audios: []
@@ -582,7 +642,12 @@
         title: "Not That Way",
         type: "Original",
         status: "Live Ready",
-        keyCapo: "F",
+        key: "F",
+        capo: "None",
+        bpm: "92",
+        timeSig: "4/4",
+        coWriters: "",
+        tags: ["Folk", "Ballad", "Fingerpicking"],
         chords: "F, Am, G Verse Dm, C, Bb, Am",
         lyrics: "Intro: [F] [Am] [G]\n\nVerse:\n[Dm]Caught in the middle of a [C]broken dream\n[Bb]Tearing apart at the [Am]frayed old seam\n\nChorus:\n[F]It don't go down that [Am]way no more [G]",
         audios: []
@@ -592,33 +657,38 @@
         title: "Move My Car",
         type: "Original",
         status: "In Progress",
-        keyCapo: "C",
+        key: "C",
+        capo: "None",
+        bpm: "130",
+        timeSig: "4/4",
+        coWriters: "",
+        tags: ["Upbeat", "Story", "Acoustic"],
         chords: "intro C G F C: Bb G",
         lyrics: "Intro: [C] [G] [F] [C] : [Bb] [G]\n\nVerse:\nStreet sweeper coming at the break of dawn\nBetter move my car before the daylight's gone",
         audios: []
       }
     ];
 
-    let songs = JSON.parse(localStorage.getItem("tunepile_songs")) || INITIAL_SONGS;
-    let ghConfig = JSON.parse(localStorage.getItem("tunepile_gh_config")) || {
+    let songs = JSON.parse(localStorage.getItem("songpile_songs")) || INITIAL_SONGS;
+    let ghConfig = JSON.parse(localStorage.getItem("songpile_gh_config")) || {
       owner: "imattdotnet",
-      repo: "TunePile",
+      repo: "SongPile",
       branch: "main",
       token: ""
     };
-    let currentFileSha = localStorage.getItem("tunepile_file_sha") || null;
+    let currentFileSha = localStorage.getItem("songpile_file_sha") || null;
     let activeSongId = null;
     let mediaRecorder = null;
     let audioChunks = [];
     let isRecording = false;
 
     function persist() {
-      localStorage.setItem("tunepile_songs", JSON.stringify(songs));
+      localStorage.setItem("songpile_songs", JSON.stringify(songs));
     }
 
     function initSyncUI() {
       document.getElementById("ghOwner").value = ghConfig.owner || "imattdotnet";
-      document.getElementById("ghRepo").value = ghConfig.repo || "TunePile";
+      document.getElementById("ghRepo").value = ghConfig.repo || "SongPile";
       document.getElementById("ghBranch").value = ghConfig.branch || "main";
       document.getElementById("ghToken").value = ghConfig.token || "";
 
@@ -640,12 +710,12 @@
       ghConfig.branch = document.getElementById("ghBranch").value.trim() || "main";
       ghConfig.token = document.getElementById("ghToken").value.trim();
 
-      localStorage.setItem("tunepile_gh_config", JSON.stringify(ghConfig));
+      localStorage.setItem("songpile_gh_config", JSON.stringify(ghConfig));
       initSyncUI();
-      alert("GitHub Sync settings saved!");
+      alert("SongPile GitHub Sync settings saved!");
     }
 
-    // Direct GitHub REST API Integration
+    // Direct GitHub REST API Sync
     async function pullFromGitHub() {
       if (!ghConfig.token) {
         alert("Please configure your GitHub Token first in the 'GitHub Sync' tab.");
@@ -670,15 +740,12 @@
           return;
         }
 
-        if (!resp.ok) {
-          throw new Error(`GitHub API Error: ${resp.statusText}`);
-        }
+        if (!resp.ok) throw new Error(`GitHub API Error: ${resp.statusText}`);
 
         const data = await resp.json();
         currentFileSha = data.sha;
-        localStorage.setItem("tunepile_file_sha", currentFileSha);
+        localStorage.setItem("songpile_file_sha", currentFileSha);
 
-        // Decode UTF-8 Base64 content
         const decodedContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
         const remoteSongs = JSON.parse(decodedContent);
 
@@ -705,7 +772,6 @@
       setSyncStatus("syncing", "Pushing changes to GitHub...");
       const url = `[suspicious link removed]{ghConfig.owner}/${ghConfig.repo}/contents/songs.json`;
 
-      // Get latest SHA first if we don't have it
       if (!currentFileSha) {
         try {
           const checkResp = await fetch(`${url}?ref=${ghConfig.branch}`, {
@@ -718,23 +784,18 @@
             const checkData = await checkResp.json();
             currentFileSha = checkData.sha;
           }
-        } catch (e) {
-          // File might not exist yet, which is fine
-        }
+        } catch (e) {}
       }
 
-      // Encode UTF-8 JSON to Base64
       const jsonString = JSON.stringify(songs, null, 2);
       const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
 
       const payload = {
-        message: `Update songs.json via TunePile App [${new Date().toLocaleDateString()}]`,
+        message: `Update songs.json via SongPile App [${new Date().toLocaleDateString()}]`,
         content: encodedContent,
         branch: ghConfig.branch
       };
-      if (currentFileSha) {
-        payload.sha = currentFileSha;
-      }
+      if (currentFileSha) payload.sha = currentFileSha;
 
       try {
         const putResp = await fetch(url, {
@@ -754,7 +815,7 @@
 
         const resData = await putResp.json();
         currentFileSha = resData.content.sha;
-        localStorage.setItem("tunepile_file_sha", currentFileSha);
+        localStorage.setItem("songpile_file_sha", currentFileSha);
 
         setSyncStatus("connected", `Pushed successfully! (${new Date().toLocaleTimeString()})`);
         alert("Saved and committed directly to GitHub repository!");
@@ -765,10 +826,7 @@
     }
 
     async function testGitHubConnection() {
-      if (!ghConfig.token) {
-        alert("Enter a token first.");
-        return;
-      }
+      if (!ghConfig.token) { alert("Enter a token first."); return; }
       try {
         const resp = await fetch(`[suspicious link removed]{ghConfig.owner}/${ghConfig.repo}`, {
           headers: { "Authorization": `Bearer ${ghConfig.token}` }
@@ -790,7 +848,7 @@
       text.innerText = msg;
     }
 
-    // Song Rendering & Management
+    // Song Rendering & Filter
     function renderSongList() {
       const list = document.getElementById("songList");
       const query = document.getElementById("searchInput").value.toLowerCase();
@@ -800,16 +858,20 @@
       list.innerHTML = "";
 
       const filtered = songs.filter(s => {
+        const tagsString = (s.tags || []).join(" ").toLowerCase();
         const matchesQuery = s.title.toLowerCase().includes(query) || 
                              (s.chords && s.chords.toLowerCase().includes(query)) ||
-                             (s.lyrics && s.lyrics.toLowerCase().includes(query));
+                             (s.lyrics && s.lyrics.toLowerCase().includes(query)) ||
+                             (s.coWriters && s.coWriters.toLowerCase().includes(query)) ||
+                             tagsString.includes(query);
+
         const matchesType = typeFilter === "all" || s.type === typeFilter;
         const matchesStatus = statusFilter === "all" || s.status === statusFilter;
         return matchesQuery && matchesType && matchesStatus;
       });
 
       if (filtered.length === 0) {
-        list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">No songs found. Tap <b>+ New Song</b> to begin!</div>`;
+        list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">No songs match your search. Tap <b>+ New Song</b> to add one!</div>`;
         return;
       }
 
@@ -820,6 +882,13 @@
 
         const typeBadge = s.type === "Original" ? "badge-original" : "badge-cover";
         const statusBadge = s.status === "Live Ready" ? "badge-ready" : "badge-draft";
+
+        let pillsHtml = [];
+        if (s.key) pillsHtml.push(`<span class="meta-pill">Key: ${s.key}</span>`);
+        if (s.capo && s.capo !== "None") pillsHtml.push(`<span class="meta-pill">Capo ${s.capo}</span>`);
+        if (s.bpm) pillsHtml.push(`<span class="meta-pill">${s.bpm} BPM</span>`);
+        if (s.coWriters) pillsHtml.push(`<span class="meta-pill">w/ ${s.coWriters}</span>`);
+        (s.tags || []).forEach(t => pillsHtml.push(`<span class="meta-pill" style="border-color: var(--accent-subtle);">#${t}</span>`));
 
         card.innerHTML = `
           <div class="song-header">
@@ -832,7 +901,7 @@
               <span class="badge ${statusBadge}">${s.status}</span>
             </div>
           </div>
-          ${s.keyCapo ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Key/Capo: ${s.keyCapo}</div>` : ''}
+          ${pillsHtml.length ? `<div class="meta-pills">${pillsHtml.join("")}</div>` : ''}
         `;
         list.appendChild(card);
       });
@@ -846,7 +915,12 @@
       document.getElementById("editTitle").value = "";
       document.getElementById("editType").value = "Original";
       document.getElementById("editStatus").value = "Spark";
-      document.getElementById("editKeyCapo").value = "";
+      document.getElementById("editKey").value = "";
+      document.getElementById("editCapo").value = "";
+      document.getElementById("editBpm").value = "";
+      document.getElementById("editTimeSig").value = "4/4";
+      document.getElementById("editCoWriters").value = "";
+      document.getElementById("editTags").value = "";
       document.getElementById("editChords").value = "";
       document.getElementById("editLyrics").value = "";
       document.getElementById("deleteSongBtn").style.display = "none";
@@ -863,7 +937,12 @@
       document.getElementById("editTitle").value = s.title || "";
       document.getElementById("editType").value = s.type || "Original";
       document.getElementById("editStatus").value = s.status || "In Progress";
-      document.getElementById("editKeyCapo").value = s.keyCapo || "";
+      document.getElementById("editKey").value = s.key || "";
+      document.getElementById("editCapo").value = s.capo || "";
+      document.getElementById("editBpm").value = s.bpm || "";
+      document.getElementById("editTimeSig").value = s.timeSig || "4/4";
+      document.getElementById("editCoWriters").value = s.coWriters || "";
+      document.getElementById("editTags").value = (s.tags || []).join(", ");
       document.getElementById("editChords").value = s.chords || "";
       document.getElementById("editLyrics").value = s.lyrics || "";
       document.getElementById("deleteSongBtn").style.display = "inline-block";
@@ -878,33 +957,34 @@
 
     function saveSongDetails() {
       const title = document.getElementById("editTitle").value.trim();
-      if (!title) {
-        alert("Please provide a song title.");
-        return;
-      }
+      if (!title) { alert("Please provide a song title."); return; }
+
+      const parsedTags = document.getElementById("editTags").value
+        .split(",")
+        .map(t => t.trim())
+        .filter(t => t.length > 0);
+
+      const songData = {
+        title: title,
+        type: document.getElementById("editType").value,
+        status: document.getElementById("editStatus").value,
+        key: document.getElementById("editKey").value.trim(),
+        capo: document.getElementById("editCapo").value.trim(),
+        bpm: document.getElementById("editBpm").value.trim(),
+        timeSig: document.getElementById("editTimeSig").value.trim(),
+        coWriters: document.getElementById("editCoWriters").value.trim(),
+        tags: parsedTags,
+        chords: document.getElementById("editChords").value.trim(),
+        lyrics: document.getElementById("editLyrics").value
+      };
 
       if (!activeSongId) {
-        const newSong = {
-          id: "song-" + Date.now(),
-          title: title,
-          type: document.getElementById("editType").value,
-          status: document.getElementById("editStatus").value,
-          keyCapo: document.getElementById("editKeyCapo").value,
-          chords: document.getElementById("editChords").value,
-          lyrics: document.getElementById("editLyrics").value,
-          audios: []
-        };
-        songs.push(newSong);
+        songData.id = "song-" + Date.now();
+        songData.audios = [];
+        songs.push(songData);
       } else {
         const s = songs.find(x => x.id === activeSongId);
-        if (s) {
-          s.title = title;
-          s.type = document.getElementById("editType").value;
-          s.status = document.getElementById("editStatus").value;
-          s.keyCapo = document.getElementById("editKeyCapo").value;
-          s.chords = document.getElementById("editChords").value;
-          s.lyrics = document.getElementById("editLyrics").value;
-        }
+        if (s) Object.assign(s, songData);
       }
 
       persist();
@@ -914,7 +994,7 @@
 
     function deleteCurrentSong() {
       if (!activeSongId) return;
-      if (confirm("Delete this song and its attached scratch memos?")) {
+      if (confirm("Delete this song and all its attached scratch memos?")) {
         songs = songs.filter(s => s.id !== activeSongId);
         persist();
         renderSongList();
@@ -928,7 +1008,7 @@
       container.innerHTML = "";
 
       if (!audioList || audioList.length === 0) {
-        container.innerHTML = `<div style="font-size:0.8rem; color: var(--text-muted);">No voice memos attached yet. Hit "Record Idea" to capture a melody!</div>`;
+        container.innerHTML = `<div style="font-size:0.8rem; color: var(--text-muted);">No voice memos attached yet. Tap "Record Idea" to capture a melody!</div>`;
         return;
       }
 
@@ -960,8 +1040,7 @@
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = () => {
-              const base64Audio = reader.result;
-              saveAudioToCurrentSong("Voice Memo (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ")", base64Audio);
+              saveAudioToCurrentSong("Voice Memo (" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ")", reader.result);
             };
           };
 
@@ -989,18 +1068,16 @@
     }
 
     function handleAudioUpload(event) {
-      const file = event.target.files[0];
+      const file = event.target.files;
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = e => {
-        saveAudioToCurrentSong(file.name, e.target.result);
-      };
+      reader.onload = e => saveAudioToCurrentSong(file.name, e.target.result);
       reader.readAsDataURL(file);
     }
 
     function saveAudioToCurrentSong(label, base64Url) {
       if (!activeSongId) {
-        alert("Please save the song basic info first before attaching audio!");
+        alert("Please save basic song details first before attaching audio!");
         return;
       }
       const s = songs.find(x => x.id === activeSongId);
@@ -1021,23 +1098,22 @@
       const container = document.getElementById("setlistOutput");
       let text = "";
       songs.forEach((s, i) => {
-        text += `${i + 1}. ${s.title} (${s.chords || 'No chords'})\n`;
+        let keyInfo = s.key ? ` [Key: ${s.key}${s.capo && s.capo !== 'None' ? ' Capo ' + s.capo : ''}]` : '';
+        text += `${i + 1}. ${s.title}${keyInfo} (${s.chords || 'No chords'})\n`;
       });
       container.innerText = text;
     }
 
     function copySetlistToClipboard() {
       const text = document.getElementById("setlistOutput").innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Setlist copied to clipboard!");
-      });
+      navigator.clipboard.writeText(text).then(() => alert("Setlist copied to clipboard!"));
     }
 
     function toggleStageFloorMode() {
       document.getElementById("setlistOutput").classList.toggle("stage-floor-mode");
     }
 
-    // Navigation Tabs
+    // Tabs
     function switchTab(tab) {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("onclick").includes(tab));
@@ -1049,7 +1125,7 @@
       document.getElementById("tab-backup").style.display = tab === 'backup' ? 'block' : 'none';
     }
 
-    // Manual Backup & Restore
+    // Backup & Restore
     function exportLibraryJSON() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(songs, null, 2));
       const a = document.createElement("a");
@@ -1061,7 +1137,7 @@
     }
 
     function importLibraryJSON(event) {
-      const file = event.target.files[0];
+      const file = event.target.files;
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
@@ -1073,9 +1149,7 @@
             renderSongList();
             alert("Library restored successfully!");
           }
-        } catch (err) {
-          alert("Invalid JSON file.");
-        }
+        } catch (err) { alert("Invalid JSON file."); }
       };
       reader.readAsText(file);
     }
