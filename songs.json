@@ -1,0 +1,47 @@
+[
+  {
+    "id": "song-1",
+    "title": "Burn This",
+    "type": "Original",
+    "status": "Live Ready",
+    "key": "Em",
+    "capo": "None",
+    "bpm": "118",
+    "timeSig": "4/4",
+    "coWriters": "",
+    "tags": ["Indie Rock", "Driving", "Acoustic"],
+    "chords": "Em, D",
+    "lyrics": "Intro: [Em] [D] [Em] [D]\n\n[Em]Burn this bridge before you [D]walk away\n[Em]Nothing left of yesterday [D]\n\nChorus:\n[C]Fire in the dark, [G]smoke in the trees\n[Am]Whisper down to your [B7]knees",
+    "audios": []
+  },
+  {
+    "id": "song-2",
+    "title": "Not That Way",
+    "type": "Original",
+    "status": "Live Ready",
+    "key": "F",
+    "capo": "None",
+    "bpm": "92",
+    "timeSig": "4/4",
+    "coWriters": "",
+    "tags": ["Folk", "Ballad", "Fingerpicking"],
+    "chords": "F, Am, G Verse Dm, C, Bb, Am",
+    "lyrics": "Intro: [F] [Am] [G]\n\nVerse:\n[Dm]Caught in the middle of a [C]broken dream\n[Bb]Tearing apart at the [Am]frayed old seam\n\nChorus:\n[F]It don't go down that [Am]way no more [G]",
+    "audios": []
+  },
+  {
+    "id": "song-3",
+    "title": "Move My Car",
+    "type": "Original",
+    "status": "In Progress",
+    "key": "C",
+    "capo": "None",
+    "bpm": "130",
+    "timeSig": "4/4",
+    "coWriters": "",
+    "tags": ["Upbeat", "Story", "Acoustic"],
+    "chords": "intro C G F C: Bb G",
+    "lyrics": "Intro: [C] [G] [F] [C] : [Bb] [G]\n\nVerse:\nStreet sweeper coming at the break of dawn\nBetter move my car before the daylight's gone",
+    "audios": []
+  }
+]
