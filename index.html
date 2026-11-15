@@ -74,11 +74,34 @@
       font-family: var(--font-mono);
       letter-spacing: 0.5px;
     }
+    .mode-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid transparent;
+    }
+    .mode-badge.performer {
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+    .mode-badge.editor {
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--green);
+      border-color: var(--green);
+    }
     .header-meta-timestamp {
       font-size: 0.72rem;
       color: var(--text-muted);
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
       gap: 6px;
       padding-left: 2px;
     }
@@ -180,6 +203,20 @@
     .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--surface-border); }
     .btn-danger { background: rgba(248, 81, 73, 0.2); color: var(--red); border: 1px solid var(--red); }
     .btn-success { background: rgba(63, 185, 80, 0.2); color: var(--green); border: 1px solid var(--green); }
+    .btn-listen {
+      background: rgba(88, 166, 255, 0.2);
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-listen:hover { background: var(--blue); color: #000; }
 
     /* Song Cards */
     .song-list { display: flex; flex-direction: column; gap: 10px; }
@@ -235,12 +272,23 @@
       margin-top: 10px;
       font-size: 0.78rem;
       color: var(--text-muted);
+      align-items: center;
     }
     .meta-pill {
       background: #111317;
       padding: 3px 8px;
       border-radius: 4px;
       border: 1px solid var(--surface-border);
+    }
+
+    /* Embedded Inline Card Audio Player */
+    .card-inline-player {
+      margin-top: 10px;
+      padding: 8px;
+      background: #111317;
+      border-radius: 6px;
+      border: 1px solid var(--surface-border);
+      display: none;
     }
 
     /* History Timeline Cards */
@@ -432,50 +480,62 @@
       border: 2px solid var(--accent) !important;
     }
 
+    /* Read-Only Mode Specific UI Overrides */
+    body.is-readonly .editor-only {
+      display: none !important;
+    }
+
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0 !important; }
-      header, .controls, .nav-tabs, .audio-shelf, .modal-footer, .sync-bar, .mobile-dock, .no-print { display: none !important; }
+      header, .controls, .nav-tabs, .audio-shelf, .modal-footer, .sync-bar, .mobile-dock, .no-print, .btn-listen { display: none !important; }
       .modal-overlay { position: static !important; background: transparent !important; display: block !important; }
       .modal { border: none !important; max-width: 100% !important; max-height: none !important; }
       .modal-body { padding: 0 !important; }
-      textarea.form-control {
+      textarea.form-control, .readonly-lyrics-view {
         border: none !important;
         font-family: ui-monospace, monospace !important;
         font-size: 10pt !important;
         color: #000 !important;
         column-count: 2 !important;
         column-gap: 20px !important;
+        white-space: pre-wrap !important;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Sticky Header with App Version & Global songs.json Timestamp -->
+  <!-- Sticky Global Header -->
   <header>
     <div class="header-top">
       <div class="brand-wrap">
         <div class="brand">🎼 SongPile</div>
-        <span class="app-version-badge" title="SongPile Web App Version">v1.4.0</span>
+        <span class="app-version-badge" title="SongPile Web App Version">v1.5.0</span>
+        <span id="modeBadge" class="mode-badge" onclick="toggleMode()"></span>
       </div>
       <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchTab('songs')">Songs</button>
-        <button class="tab-btn" onclick="switchTab('history')">History (15)</button>
+        <button class="tab-btn editor-only" onclick="switchTab('history')">History (15)</button>
         <button class="tab-btn" onclick="switchTab('setlist')">Setlist</button>
-        <button class="tab-btn" onclick="switchTab('sync')">GitHub Sync</button>
-        <button class="tab-btn" onclick="switchTab('backup')">Backup</button>
+        <button class="tab-btn editor-only" onclick="switchTab('sync')">GitHub Sync</button>
+        <button class="tab-btn editor-only" onclick="switchTab('backup')">Backup</button>
       </div>
     </div>
     <div class="header-meta-timestamp">
-      <span>📁 <b>songs.json</b> updated:</span>
-      <span id="globalSongsUpdated" style="color: var(--accent); font-weight: 600;">Loading...</span>
+      <div>
+        <span>📁 <b>songs.json</b> updated: </span>
+        <span id="globalSongsUpdated" style="color: var(--accent); font-weight: 600;">Loading...</span>
+      </div>
+      <div id="readOnlyShareNotice" style="font-size: 0.7rem; color: var(--blue); display: none;">
+        🔒 Performer Stand Mode (Read-Only)
+      </div>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- Quick Sync Status Bar -->
-    <div class="sync-bar">
+    <!-- Quick Sync Status Bar (Hidden in Performer Mode) -->
+    <div class="sync-bar editor-only">
       <div class="sync-status">
         <span id="syncDot" class="sync-dot"></span>
         <span id="syncText">Syncing...</span>
@@ -516,8 +576,8 @@
       <div id="songList" class="song-list"></div>
     </section>
 
-    <!-- TAB 2: ROLLING 15-SNAPSHOT VERSION HISTORY -->
-    <section id="tab-history" style="display: none;">
+    <!-- TAB 2: ROLLING 15-SNAPSHOT VERSION HISTORY (Editor Only) -->
+    <section id="tab-history" class="editor-only" style="display: none;">
       <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; margin-bottom: 14px;">
         <h3 style="margin-bottom: 6px;">Snapshot History (Last 15 Saved Copies)</h3>
         <p style="color: var(--text-muted); font-size: 0.85rem;">
@@ -536,8 +596,8 @@
       <div id="setlistOutput" style="background: #111317; border: 1px solid var(--surface-border); padding: 16px; border-radius: 8px; font-family: var(--font-mono); white-space: pre-wrap; line-height: 1.8;"></div>
     </section>
 
-    <!-- TAB 4: GITHUB SYNC -->
-    <section id="tab-sync" style="display: none;">
+    <!-- TAB 4: GITHUB SYNC (Editor Only) -->
+    <section id="tab-sync" class="editor-only" style="display: none;">
       <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px;">
         <h3 style="margin-bottom: 8px;">Direct GitHub Sync</h3>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
@@ -572,8 +632,8 @@
       </div>
     </section>
 
-    <!-- TAB 5: MANUAL BACKUP -->
-    <section id="tab-backup" style="display: none;">
+    <!-- TAB 5: MANUAL BACKUP (Editor Only) -->
+    <section id="tab-backup" class="editor-only" style="display: none;">
       <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px;">
         <h3 style="margin-bottom: 8px;">Backup & Reset</h3>
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">
@@ -597,94 +657,110 @@
     <button class="dock-btn active" onclick="switchTab('songs')">
       <span>🎸</span><span>Songs</span>
     </button>
-    <button class="dock-btn" onclick="switchTab('history')">
+    <button class="dock-btn editor-only" onclick="switchTab('history')">
       <span>🕒</span><span>History</span>
     </button>
-    <button class="dock-btn dock-btn-main" onclick="openNewSongModal()">
+    <button class="dock-btn dock-btn-main editor-only" onclick="openNewSongModal()">
       + Song
     </button>
     <button class="dock-btn" onclick="switchTab('setlist')">
       <span>📋</span><span>Setlist</span>
     </button>
-    <button class="dock-btn" onclick="switchTab('sync')">
+    <button class="dock-btn editor-only" onclick="switchTab('sync')">
       <span>☁️</span><span>Sync</span>
     </button>
   </div>
 
-  <!-- Song Detail / Editor Modal -->
+  <!-- Song Detail / Reader / Editor Modal -->
   <div id="songModal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="modalTitle">Edit Song</h3>
+        <h3 id="modalTitle">Song Chart</h3>
         <button class="btn btn-secondary" style="padding: 4px 10px;" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-body">
 
-        <div class="form-grid-4">
-          <div class="form-group" style="grid-column: span 2;">
-            <label>Song Title</label>
-            <input type="text" id="editTitle" class="form-control" placeholder="e.g. Burn This">
+        <!-- Read-Only Song Summary Header (Shows in Performer Mode) -->
+        <div id="modalReadOnlyHeader" style="display:none; background:#111317; border:1px solid var(--surface-border); border-radius:8px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h2 id="viewTitle" style="color:var(--text); font-size:1.3rem;"></h2>
+              <div id="viewChords" style="font-family:var(--font-mono); color:var(--accent); font-weight:700;"></div>
+            </div>
+            <div id="viewBadges" class="badges"></div>
           </div>
-          <div class="form-group">
-            <label>Type</label>
-            <select id="editType" class="form-control">
-              <option value="Original">Original</option>
-              <option value="Cover">Cover</option>
-            </select>
+          <div id="viewMetaPills" class="meta-pills" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- Editable Form Grid (Shows in Editor Mode) -->
+        <div id="modalEditForm" class="editor-only" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="form-grid-4">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Song Title</label>
+              <input type="text" id="editTitle" class="form-control" placeholder="e.g. Burn This">
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="editType" class="form-control">
+                <option value="Original">Original</option>
+                <option value="Cover">Cover</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="editStatus" class="form-control">
+                <option value="Live Ready">Live Ready</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Rehearsing">Rehearsing</option>
+                <option value="Spark">Spark</option>
+                <option value="Retired">Retired</option>
+              </select>
+            </div>
           </div>
+
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label>Key</label>
+              <input type="text" id="editKey" class="form-control" placeholder="e.g. Em">
+            </div>
+            <div class="form-group">
+              <label>Capo</label>
+              <input type="text" id="editCapo" class="form-control" placeholder="e.g. 2 / None">
+            </div>
+            <div class="form-group">
+              <label>Tempo (BPM)</label>
+              <input type="text" id="editBpm" class="form-control" placeholder="e.g. 118">
+            </div>
+            <div class="form-group">
+              <label>Time Sig</label>
+              <input type="text" id="editTimeSig" class="form-control" placeholder="e.g. 4/4">
+            </div>
+          </div>
+
+          <div class="form-grid-4">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Co-Writers</label>
+              <input type="text" id="editCoWriters" class="form-control" placeholder="e.g. Matthew Brandabur">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Tags (comma separated)</label>
+              <input type="text" id="editTags" class="form-control" placeholder="e.g. Acoustic, Rock, Driving">
+            </div>
+          </div>
+
           <div class="form-group">
-            <label>Status</label>
-            <select id="editStatus" class="form-control">
-              <option value="Live Ready">Live Ready</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Rehearsing">Rehearsing</option>
-              <option value="Spark">Spark</option>
-              <option value="Retired">Retired</option>
-            </select>
+            <label>Quick Chord Pattern (Shows on Setlists)</label>
+            <input type="text" id="editChords" class="form-control" placeholder="e.g. Em, D (Chorus: F#m, G#, Bm7)">
           </div>
         </div>
 
-        <div class="form-grid-4">
-          <div class="form-group">
-            <label>Key</label>
-            <input type="text" id="editKey" class="form-control" placeholder="e.g. Em">
-          </div>
-          <div class="form-group">
-            <label>Capo</label>
-            <input type="text" id="editCapo" class="form-control" placeholder="e.g. 2 / None">
-          </div>
-          <div class="form-group">
-            <label>Tempo (BPM)</label>
-            <input type="text" id="editBpm" class="form-control" placeholder="e.g. 118">
-          </div>
-          <div class="form-group">
-            <label>Time Sig</label>
-            <input type="text" id="editTimeSig" class="form-control" placeholder="e.g. 4/4">
-          </div>
-        </div>
-
-        <div class="form-grid-4">
-          <div class="form-group" style="grid-column: span 2;">
-            <label>Co-Writers</label>
-            <input type="text" id="editCoWriters" class="form-control" placeholder="e.g. Matthew Brandabur">
-          </div>
-          <div class="form-group" style="grid-column: span 2;">
-            <label>Tags (comma separated)</label>
-            <input type="text" id="editTags" class="form-control" placeholder="e.g. Acoustic, Rock, Driving">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Quick Chord Pattern (Shows on Setlists)</label>
-          <input type="text" id="editChords" class="form-control" placeholder="e.g. Em, D (Chorus: F#m, G#, Bm7)">
-        </div>
-
-        <div class="audio-shelf">
+        <!-- Audio Shelf (Visible in Both Modes, Recording only in Editor) -->
+        <div class="audio-shelf" id="audioShelf">
           <div class="audio-header">
             <label style="font-weight: 700; color: var(--accent); font-size: 0.8rem; text-transform: uppercase;">
-              🎙️ Scratchpad & Memos
+              🎧 Audio Reference & Memos
             </label>
-            <div style="display: flex; gap: 6px;">
+            <div style="display: flex; gap: 6px;" class="editor-only">
               <button id="recordBtn" class="record-btn" onclick="toggleAudioRecording()">● Record</button>
               <label class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.72rem; cursor: pointer;">
                 + Attach
@@ -695,6 +771,7 @@
           <div id="audioListContainer" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
 
+        <!-- Lyrics / Chord Chart View -->
         <div class="form-group">
           <label>Lyrics & Chord Chart</label>
           <textarea id="editLyrics" class="form-control" placeholder="Paste lyrics and chord sheets here..."></textarea>
@@ -704,19 +781,52 @@
       <div class="modal-footer">
         <div style="display: flex; align-items: center; gap: 8px;">
           <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
-          <button id="deleteSongBtn" class="btn btn-danger" onclick="deleteCurrentSong()">Delete</button>
+          <button id="deleteSongBtn" class="btn btn-danger editor-only" onclick="deleteCurrentSong()">Delete</button>
           <span id="modalDateStamp" style="font-size: 0.72rem; color: var(--text-muted);"></span>
         </div>
         <div style="display: flex; gap: 6px;">
-          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn" onclick="saveSongDetails()">Save</button>
+          <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+          <button class="btn editor-only" onclick="saveSongDetails()">Save</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.4.0";
+    const APP_VERSION = "v1.5.0";
+
+    // Mode handling: default to editor, or read-only if URL contains ?mode=performer or ?mode=readonly
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedReadOnly = urlParams.get("mode") === "performer" || 
+                              urlParams.get("mode") === "readonly" ||
+                              urlParams.get("read") === "1";
+    
+    let isReadOnly = requestedReadOnly || (localStorage.getItem("songpile_readonly_mode") === "true");
+
+    function applyModeUI() {
+      const badge = document.getElementById("modeBadge");
+      const shareNotice = document.getElementById("readOnlyShareNotice");
+      if (isReadOnly) {
+        document.body.classList.add("is-readonly");
+        badge.className = "mode-badge performer";
+        badge.innerHTML = "🔒 Performer View";
+        badge.title = "Click to switch to Editor Mode";
+        shareNotice.style.display = "block";
+      } else {
+        document.body.classList.remove("is-readonly");
+        badge.className = "mode-badge editor";
+        badge.innerHTML = "✏️ Editor Mode";
+        badge.title = "Click to switch to Performer (Read-Only) Mode";
+        shareNotice.style.display = "none";
+      }
+      renderSongList();
+    }
+
+    function toggleMode() {
+      isReadOnly = !isReadOnly;
+      localStorage.setItem("songpile_readonly_mode", isReadOnly);
+      applyModeUI();
+    }
 
     const DEFAULT_SONGS = [
       {
@@ -813,7 +923,6 @@
         isoOrNice = localStorage.getItem("songpile_songs_last_modified");
       }
       if (!isoOrNice) {
-        // Derive from newest song updatedAt
         const newest = songs.reduce((acc, s) => {
           const t = new Date(s.updatedAt || 0).getTime();
           return t > acc ? t : acc;
@@ -838,12 +947,12 @@
 
     // --- ROLLING 15-SNAPSHOT VERSION HISTORY SYSTEM ---
     function recordSnapshot(sourceLabel = "Auto-Save") {
-      if (!songs || songs.length === 0) return;
+      if (isReadOnly || !songs || songs.length === 0) return;
       try {
         let history = JSON.parse(localStorage.getItem("songpile_history") || "[]");
         const currentJson = JSON.stringify(songs);
 
-        if (history.length > 0 && JSON.stringify(history[0].songs) === currentJson) {
+        if (history.length > 0 && JSON.stringify(history.songs) === currentJson) {
           return;
         }
 
@@ -1170,8 +1279,8 @@
     function setSyncStatus(state, msg) {
       const dot = document.getElementById("syncDot");
       const text = document.getElementById("syncText");
-      dot.className = `sync-dot ${state}`;
-      text.innerText = msg;
+      if (dot) dot.className = `sync-dot ${state}`;
+      if (text) text.innerText = msg;
     }
 
     function formatDateNice(dateObj) {
@@ -1180,6 +1289,18 @@
       }) + ', ' + dateObj.toLocaleTimeString(undefined, {
         hour: 'numeric', minute: '2-digit'
       });
+    }
+
+    function toggleCardAudio(event, songId) {
+      event.stopPropagation();
+      const playerBox = document.getElementById("inline-player-" + songId);
+      if (playerBox) {
+        const isHidden = playerBox.style.display === "none" || playerBox.style.display === "";
+        playerBox.style.display = isHidden ? "block" : "none";
+        const audio = playerBox.querySelector("audio");
+        if (audio && isHidden) audio.play().catch(() => {});
+        else if (audio && !isHidden) audio.pause();
+      }
     }
 
     function renderSongList() {
@@ -1219,18 +1340,19 @@
       });
 
       if (filtered.length === 0) {
-        list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">No songs match your search. Tap <b>+ New Song</b>!</div>`;
+        list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">No songs match your search.</div>`;
         return;
       }
 
       filtered.forEach(s => {
         const card = document.createElement("div");
         card.className = "song-card";
-        card.onclick = () => openEditSongModal(s.id);
+        card.onclick = () => openSongModal(s.id);
 
         const typeBadge = s.type === "Original" ? "badge-original" : "badge-cover";
         const statusBadge = s.status === "Live Ready" ? "badge-ready" : "badge-draft";
         const dateDisplay = s.updatedAtFormatted || "Recently saved";
+        const hasAudio = s.audios && s.audios.length > 0;
 
         let pillsHtml = [];
         if (s.key) pillsHtml.push(`<span class="meta-pill">Key: ${s.key}</span>`);
@@ -1238,6 +1360,26 @@
         if (s.bpm) pillsHtml.push(`<span class="meta-pill">${s.bpm} BPM</span>`);
         if (s.coWriters) pillsHtml.push(`<span class="meta-pill">w/ ${s.coWriters}</span>`);
         (s.tags || []).forEach(t => pillsHtml.push(`<span class="meta-pill" style="border-color: var(--accent-subtle);">#${t}</span>`));
+
+        // Listen Button for Song Cards
+        let listenBtnHtml = "";
+        let inlinePlayerHtml = "";
+        if (hasAudio) {
+          const firstAudio = s.audios[0];
+          listenBtnHtml = `
+            <button class="btn-listen" onclick="toggleCardAudio(event, '${s.id}')">
+              ▶ Listen (${s.audios.length})
+            </button>
+          `;
+          inlinePlayerHtml = `
+            <div id="inline-player-${s.id}" class="card-inline-player" onclick="event.stopPropagation()">
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;">
+                🎵 Playing: <b>${firstAudio.label}</b>
+              </div>
+              <audio controls src="${firstAudio.url}"></audio>
+            </div>
+          `;
+        }
 
         card.innerHTML = `
           <div class="song-header">
@@ -1247,6 +1389,7 @@
             </div>
             <div style="display:flex; flex-direction:column; align-items:flex-end;">
               <div class="badges">
+                ${listenBtnHtml}
                 <span class="badge ${typeBadge}">${s.type}</span>
                 <span class="badge ${statusBadge}">${s.status}</span>
               </div>
@@ -1254,6 +1397,7 @@
             </div>
           </div>
           ${pillsHtml.length ? `<div class="meta-pills">${pillsHtml.join("")}</div>` : ''}
+          ${inlinePlayerHtml}
         `;
         list.appendChild(card);
       });
@@ -1262,8 +1406,12 @@
     }
 
     function openNewSongModal() {
+      if (isReadOnly) return;
       activeSongId = null;
       document.getElementById("modalTitle").innerText = "New Song Idea";
+      document.getElementById("modalReadOnlyHeader").style.display = "none";
+      document.getElementById("modalEditForm").style.display = "flex";
+      
       document.getElementById("editTitle").value = "";
       document.getElementById("editType").value = "Original";
       document.getElementById("editStatus").value = "Spark";
@@ -1275,41 +1423,81 @@
       document.getElementById("editTags").value = "";
       document.getElementById("editChords").value = "";
       document.getElementById("editLyrics").value = "";
+      document.getElementById("editLyrics").readOnly = false;
       document.getElementById("modalDateStamp").innerText = "";
       document.getElementById("deleteSongBtn").style.display = "none";
       renderModalAudios([]);
       document.getElementById("songModal").style.display = "flex";
     }
 
-    function openEditSongModal(id) {
+    function openSongModal(id) {
       activeSongId = id;
       const s = songs.find(x => x.id === id);
       if (!s) return;
 
-      document.getElementById("modalTitle").innerText = `Edit: ${s.title}`;
-      document.getElementById("editTitle").value = s.title || "";
-      document.getElementById("editType").value = s.type || "Original";
-      document.getElementById("editStatus").value = s.status || "In Progress";
-      document.getElementById("editKey").value = s.key || "";
-      document.getElementById("editCapo").value = s.capo || "";
-      document.getElementById("editBpm").value = s.bpm || "";
-      document.getElementById("editTimeSig").value = s.timeSig || "4/4";
-      document.getElementById("editCoWriters").value = s.coWriters || "";
-      document.getElementById("editTags").value = (s.tags || []).join(", ");
-      document.getElementById("editChords").value = s.chords || "";
-      document.getElementById("editLyrics").value = s.lyrics || "";
+      const editForm = document.getElementById("modalEditForm");
+      const readOnlyHeader = document.getElementById("modalReadOnlyHeader");
+      const lyricsArea = document.getElementById("editLyrics");
+
+      if (isReadOnly) {
+        document.getElementById("modalTitle").innerText = `${s.title}`;
+        editForm.style.display = "none";
+        readOnlyHeader.style.display = "block";
+
+        document.getElementById("viewTitle").innerText = s.title;
+        document.getElementById("viewChords").innerText = s.chords ? `Chords: ${s.chords}` : '';
+        
+        const typeBadge = s.type === "Original" ? "badge-original" : "badge-cover";
+        const statusBadge = s.status === "Live Ready" ? "badge-ready" : "badge-draft";
+        document.getElementById("viewBadges").innerHTML = `
+          <span class="badge ${typeBadge}">${s.type}</span>
+          <span class="badge ${statusBadge}">${s.status}</span>
+        `;
+
+        let pills = [];
+        if (s.key) pills.push(`<span class="meta-pill">Key: ${s.key}</span>`);
+        if (s.capo && s.capo !== "None") pills.push(`<span class="meta-pill">Capo ${s.capo}</span>`);
+        if (s.bpm) pills.push(`<span class="meta-pill">${s.bpm} BPM</span>`);
+        if (s.coWriters) pills.push(`<span class="meta-pill">w/ ${s.coWriters}</span>`);
+        (s.tags || []).forEach(t => pills.push(`<span class="meta-pill">#${t}</span>`));
+        document.getElementById("viewMetaPills").innerHTML = pills.join("");
+
+        lyricsArea.value = s.lyrics || "";
+        lyricsArea.readOnly = true;
+        document.getElementById("deleteSongBtn").style.display = "none";
+      } else {
+        document.getElementById("modalTitle").innerText = `Edit: ${s.title}`;
+        editForm.style.display = "flex";
+        readOnlyHeader.style.display = "none";
+
+        document.getElementById("editTitle").value = s.title || "";
+        document.getElementById("editType").value = s.type || "Original";
+        document.getElementById("editStatus").value = s.status || "In Progress";
+        document.getElementById("editKey").value = s.key || "";
+        document.getElementById("editCapo").value = s.capo || "";
+        document.getElementById("editBpm").value = s.bpm || "";
+        document.getElementById("editTimeSig").value = s.timeSig || "4/4";
+        document.getElementById("editCoWriters").value = s.coWriters || "";
+        document.getElementById("editTags").value = (s.tags || []).join(", ");
+        document.getElementById("editChords").value = s.chords || "";
+        lyricsArea.value = s.lyrics || "";
+        lyricsArea.readOnly = false;
+        document.getElementById("deleteSongBtn").style.display = "inline-block";
+      }
+
       document.getElementById("modalDateStamp").innerText = s.updatedAtFormatted ? `Saved: ${s.updatedAtFormatted}` : "";
-      document.getElementById("deleteSongBtn").style.display = "inline-block";
       renderModalAudios(s.audios || []);
       document.getElementById("songModal").style.display = "flex";
     }
 
     function closeModal() {
       if (isRecording) stopRecording();
+      document.querySelectorAll("audio").forEach(a => a.pause());
       document.getElementById("songModal").style.display = "none";
     }
 
     function saveSongDetails() {
+      if (isReadOnly) return;
       const title = document.getElementById("editTitle").value.trim();
       if (!title) { alert("Please provide a song title."); return; }
 
@@ -1357,7 +1545,7 @@
     }
 
     function deleteCurrentSong() {
-      if (!activeSongId) return;
+      if (isReadOnly || !activeSongId) return;
       const s = songs.find(x => x.id === activeSongId);
       const title = s ? s.title : "Song";
       if (confirm(`Delete "${title}"? A recovery snapshot will be saved in your History.`)) {
@@ -1376,7 +1564,7 @@
       container.innerHTML = "";
 
       if (!audioList || audioList.length === 0) {
-        container.innerHTML = `<div style="font-size:0.75rem; color: var(--text-muted);">No voice memos attached. Tap "● Record" to capture an idea!</div>`;
+        container.innerHTML = `<div style="font-size:0.75rem; color: var(--text-muted);">No audio or voice memo attached to this song yet.</div>`;
         return;
       }
 
@@ -1395,6 +1583,7 @@
     }
 
     async function toggleAudioRecording() {
+      if (isReadOnly) return;
       const btn = document.getElementById("recordBtn");
       if (!isRecording) {
         try {
@@ -1430,13 +1619,16 @@
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         isRecording = false;
         const btn = document.getElementById("recordBtn");
-        btn.classList.remove("recording");
-        btn.innerText = "● Record";
+        if (btn) {
+          btn.classList.remove("recording");
+          btn.innerText = "● Record";
+        }
       }
     }
 
     function handleAudioUpload(event) {
-      const file = event.target.files[0];
+      if (isReadOnly) return;
+      const file = event.target.files;
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => saveAudioToCurrentSong(file.name, e.target.result);
@@ -1444,6 +1636,7 @@
     }
 
     function saveAudioToCurrentSong(label, base64Url) {
+      if (isReadOnly) return;
       if (!activeSongId) {
         alert("Save song first before attaching audio.");
         return;
@@ -1515,7 +1708,8 @@
     }
 
     function importLibraryJSON(event) {
-      const file = event.target.files[0];
+      if (isReadOnly) return;
+      const file = event.target.files;
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
@@ -1543,6 +1737,7 @@
 
     // Startup Initialization
     initSyncUI();
+    applyModeUI();
     renderSongList();
     recordSnapshot("App Startup");
     autoFetchFromRepo();
