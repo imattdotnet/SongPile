@@ -32,25 +32,55 @@
       padding-bottom: 90px;
     }
 
+    /* Sticky Global Header */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--surface-border);
-      padding: 12px 16px;
+      padding: 10px 16px;
       position: sticky;
       top: 0;
       z-index: 100;
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .header-top {
+      display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
-    .brand {
+    .brand-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    .brand {
       font-weight: 800;
       font-size: 1.25rem;
       color: var(--accent);
       letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .app-version-badge {
+      background: var(--surface-border);
+      color: var(--accent);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+    .header-meta-timestamp {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-left: 2px;
     }
     .nav-tabs {
       display: flex;
@@ -80,6 +110,7 @@
       padding: 14px;
     }
 
+    /* Sync Bar */
     .sync-bar {
       display: flex;
       justify-content: space-between;
@@ -420,15 +451,24 @@
 </head>
 <body>
 
-  <!-- Top Header Navigation -->
+  <!-- Sticky Header with App Version & Global songs.json Timestamp -->
   <header>
-    <div class="brand">🎼 SongPile</div>
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('songs')">Songs</button>
-      <button class="tab-btn" onclick="switchTab('history')">History (15)</button>
-      <button class="tab-btn" onclick="switchTab('setlist')">Setlist</button>
-      <button class="tab-btn" onclick="switchTab('sync')">GitHub Sync</button>
-      <button class="tab-btn" onclick="switchTab('backup')">Backup</button>
+    <div class="header-top">
+      <div class="brand-wrap">
+        <div class="brand">🎼 SongPile</div>
+        <span class="app-version-badge" title="SongPile Web App Version">v1.4.0</span>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('songs')">Songs</button>
+        <button class="tab-btn" onclick="switchTab('history')">History (15)</button>
+        <button class="tab-btn" onclick="switchTab('setlist')">Setlist</button>
+        <button class="tab-btn" onclick="switchTab('sync')">GitHub Sync</button>
+        <button class="tab-btn" onclick="switchTab('backup')">Backup</button>
+      </div>
+    </div>
+    <div class="header-meta-timestamp">
+      <span>📁 <b>songs.json</b> updated:</span>
+      <span id="globalSongsUpdated" style="color: var(--accent); font-weight: 600;">Loading...</span>
     </div>
   </header>
 
@@ -552,7 +592,7 @@
 
   </div>
 
-  <!-- Mobile Bottom Floating Bar -->
+  <!-- Mobile Bottom Floating Dock -->
   <div class="mobile-dock">
     <button class="dock-btn active" onclick="switchTab('songs')">
       <span>🎸</span><span>Songs</span>
@@ -676,6 +716,8 @@
   </div>
 
   <script>
+    const APP_VERSION = "v1.4.0";
+
     const DEFAULT_SONGS = [
       {
         id: "song-1",
@@ -756,8 +798,31 @@
     let audioChunks = [];
     let isRecording = false;
 
-    function persist() {
+    // Persist & Update Global Header Timestamp
+    function persist(timestampString = null) {
       localStorage.setItem("songpile_songs", JSON.stringify(songs));
+      const effectiveDate = timestampString || new Date().toISOString();
+      localStorage.setItem("songpile_songs_last_modified", effectiveDate);
+      updateGlobalTimestampHeader(effectiveDate);
+    }
+
+    function updateGlobalTimestampHeader(isoOrNice) {
+      const el = document.getElementById("globalSongsUpdated");
+      if (!el) return;
+      if (!isoOrNice) {
+        isoOrNice = localStorage.getItem("songpile_songs_last_modified");
+      }
+      if (!isoOrNice) {
+        // Derive from newest song updatedAt
+        const newest = songs.reduce((acc, s) => {
+          const t = new Date(s.updatedAt || 0).getTime();
+          return t > acc ? t : acc;
+        }, 0);
+        isoOrNice = newest > 0 ? new Date(newest).toISOString() : new Date().toISOString();
+      }
+
+      const d = new Date(isoOrNice);
+      el.innerText = isNaN(d.getTime()) ? isoOrNice : formatDateNice(d);
     }
 
     function resetToDefaults() {
@@ -778,7 +843,6 @@
         let history = JSON.parse(localStorage.getItem("songpile_history") || "[]");
         const currentJson = JSON.stringify(songs);
 
-        // Avoid creating identical duplicate back-to-back snapshots
         if (history.length > 0 && JSON.stringify(history[0].songs) === currentJson) {
           return;
         }
@@ -962,11 +1026,12 @@
       try {
         const resp = await fetch(`./songs.json?v=${timestamp}`, { cache: "no-store" });
         if (resp.ok) {
+          const lastModifiedHeader = resp.headers.get("Last-Modified");
           const remoteSongs = await resp.json();
           if (Array.isArray(remoteSongs) && remoteSongs.length > 0) {
             recordSnapshot("Before Cloud Auto-Fetch");
             songs = remoteSongs;
-            persist();
+            persist(lastModifiedHeader);
             recordSnapshot("Cloud Auto-Fetch");
             renderSongList();
             setSyncStatus("connected", `Synced (${songs.length} songs)`);
@@ -980,6 +1045,7 @@
       if (ghConfig.token) {
         await pullFromGitHub(false);
       } else {
+        updateGlobalTimestampHeader();
         setSyncStatus("connected", `Loaded (${songs.length} songs)`);
       }
     }
@@ -1022,7 +1088,7 @@
         if (Array.isArray(remoteSongs) && remoteSongs.length > 0) {
           recordSnapshot("Before Manual Pull");
           songs = remoteSongs;
-          persist();
+          persist(new Date().toISOString());
           recordSnapshot("Manual GitHub Pull");
           renderSongList();
           setSyncStatus("connected", `Loaded ${songs.length} songs`);
@@ -1091,7 +1157,9 @@
         currentFileSha = resData.content.sha;
         localStorage.setItem("songpile_file_sha", currentFileSha);
 
-        setSyncStatus("connected", `Synced (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
+        const now = new Date();
+        persist(now.toISOString());
+        setSyncStatus("connected", `Synced (${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`);
         if (showToast) alert("Successfully pushed to GitHub!");
       } catch (err) {
         setSyncStatus("error", "Push failed");
@@ -1108,7 +1176,7 @@
 
     function formatDateNice(dateObj) {
       return dateObj.toLocaleDateString(undefined, { 
-        month: 'short', day: 'numeric'
+        month: 'short', day: 'numeric', year: 'numeric'
       }) + ', ' + dateObj.toLocaleTimeString(undefined, {
         hour: 'numeric', minute: '2-digit'
       });
@@ -1368,7 +1436,7 @@
     }
 
     function handleAudioUpload(event) {
-      const file = event.target.files;
+      const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => saveAudioToCurrentSong(file.name, e.target.result);
@@ -1447,7 +1515,7 @@
     }
 
     function importLibraryJSON(event) {
-      const file = event.target.files;
+      const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
